@@ -1,3 +1,15 @@
 AI interaction chatting Task 1: Hello Word
 
 This folder includes an illustration of chatting with Git Copilot. 
+
+User: Напиши мені мінімальну команду HelloWord на c++.
+
+Copilot: ``` C++
+
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}
+```
