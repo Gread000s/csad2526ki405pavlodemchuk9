@@ -1,3 +1,0 @@
-AI interaction chatting Task 1: Hello Word
-
-This folder includes an illustration of chatting with Git Copilot. 
