@@ -1,0 +1,81 @@
+Log of requests to GitHub Copilot for Lab Work №1
+
+Step 3: Add unit test;Add Google test support;Change CMAkeLists.txt
+
+
+===================
+Step 3.1 Generate math_operations.h
+===================
+User: Create a C++ header file math_operations.h. It should declare one function: int add(int a, int b);
+
+Copilot: "
+#pragma once
+
+int add(int a, int b);
+"
+===================
+Step 3.2 Generate math_operations.cpp
+===================
+User: Create the C++ source file math_operations.cpp. It should include math_operations.h and provide the implementation for the add function
+
+Copilot: "
+#include "math_operations.h"
+
+int add(int a, int b) {
+    return a + b;
+}
+"
+===================
+Step 3.3 Create unit test
+===================
+User: Create a unit test file unit_tests.cpp using the Google Test framework. It should include <gtest/gtest.h> and ../math_operations.h. Write one test case named "BasicAddition" to check if add(5, 5) returns 10
+
+Copilot: "
+#include <gtest/gtest.h>
+#include "../math_operations.h"
+
+TEST(BasicAddition, ReturnsSum) {
+    EXPECT_EQ(add(5, 5), 10);
+}
+"
+===================
+Step 3.4 Change CMakeLists.txt
+===================
+User: Update my CMakeLists.txt to add support for Google Test. Create a test executable named run_tests from tests/unit_tests.cpp and math_operations.cpp. Also, add math_operations.cpp to the main HelloWorld target.
+
+Copilot: "
+cmake_minimum_required(VERSION 3.10)
+
+# Set the project name and language
+project(HelloWorld LANGUAGES CXX)
+
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Add the executable for the main program
+add_executable(HelloWorld main.cpp math_operations.cpp)
+
+# Enable testing
+enable_testing()
+
+# GoogleTest
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/heads/main.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+# Add the test executable
+add_executable(run_tests tests/unit_tests.cpp math_operations.cpp)
+
+# Link GoogleTest to the test executable
+target_link_libraries(run_tests PRIVATE gtest_main) # (Я додав слово PRIVATE, це гарна практика)
+
+# Add a test to CTest
+include(GoogleTest)
+gtest_discover_tests(run_tests)
+"
