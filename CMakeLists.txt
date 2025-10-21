@@ -1,28 +1,34 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
+
+# Set the project name and language
 project(HelloWorld LANGUAGES CXX)
 
+# Set the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# --- Головна програма ---
+# Add the executable for the main program
 add_executable(HelloWorld main.cpp math_operations.cpp)
 
-# --- GoogleTest ---
+# Enable testing
+enable_testing()
+
+# GoogleTest
 include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/heads/main.zip
 )
+# For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-# set(GTEST_DISCOVER_TESTS_POST_BUILD OFF) - НЕ ПОТРІБНО
-FetchContent_MakeAvailable(googletest) # Це створює цілі gtest та gtest_main
+FetchContent_MakeAvailable(googletest)
 
-# --- Тестова програма ---
-add_executable(run_tests
-    tests/unit_tests.cpp # Цей файл тепер містить main()
-    math_operations.cpp
-)
+# Add the test executable
+add_executable(run_tests tests/unit_tests.cpp math_operations.cpp)
 
-# Лінкуємо ТІЛЬКИ бібліотеку gtest (БЕЗ gtest_main),
+# Link GoogleTest to the test executable
+target_link_libraries(run_tests PRIVATE gtest_main) # (Я додав слово PRIVATE, це гарна практика)
 
-target_link_libraries(run_tests PRIVATE gtest)
+# Add a test to CTest
+include(GoogleTest)
+gtest_discover_tests(run_tests)
