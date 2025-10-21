@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-echo "--- 1. DELETING OLD BUILD CACHE (rmdir /s /q build) ---"
+echo "--- 1. DELETING OLD BUILD CACHE ---"
 if exist "build" (
     rmdir /s /q build
 )
@@ -10,17 +10,17 @@ echo "--- 2. CREATING CLEAN BUILD DIRECTORY ---"
 mkdir build
 cd build
 
-echo "--- 3. CONFIGURING CMAKE (Defaulting to Debug) ---"
-REM Забираємо -DCMAKE_BUILD_TYPE=Release, CMake за замовчуванням використає Debug
+echo "--- 3. CONFIGURING CMAKE ---"
+:: Ми запускаємо CTest з конфігурацією, тому тут вона не потрібна
 cmake ..
 
 echo "--- 4. BUILDING PROJECT (Debug) ---"
-REM Явно збираємо конфігурацію Debug
+:: Збираємо конфігурацію Debug
 cmake --build . --config Debug
 
-echo "--- 5. RUNNING TESTS DIRECTLY (./Debug/run_tests.exe) ---"
-REM Запускаємо Debug версію тесту напряму
-.\Debug\run_tests.exe
+echo "--- 5. RUNNING TESTS WITH CTEST (Debug) ---"
+:: Запускаємо CTest, вказуючи йому конфігурацію для тестування
+ctest -C Debug --verbose
 
 popd
 pause
