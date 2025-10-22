@@ -8,19 +8,30 @@ if exist "build" (
 
 echo "--- 2. CREATING CLEAN BUILD DIRECTORY ---"
 mkdir build
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
 cd build
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 echo "--- 3. CONFIGURING CMAKE ---"
-:: Ми запускаємо CTest з конфігурацією, тому тут вона не потрібна
 cmake ..
+if %errorlevel% neq 0 (
+    echo "!!!! CMAKE CONFIGURE FAILED !!!!"
+    exit /b %errorlevel%
+)
 
 echo "--- 4. BUILDING PROJECT (Debug) ---"
-:: Збираємо конфігурацію Debug
 cmake --build . --config Debug
+if %errorlevel% neq 0 (
+    echo "!!!! CMAKE BUILD FAILED !!!!"
+    exit /b %errorlevel%
+)
 
 echo "--- 5. RUNNING TESTS WITH CTEST (Debug) ---"
-:: Запускаємо CTest, вказуючи йому конфігурацію для тестування
 ctest -C Debug --verbose
+if %errorlevel% neq 0 (
+    echo "!!!! CTEST FAILED !!!!"
+    exit /b %errorlevel%
+)
 
 popd
-pause
+echo "CI SCRIPT COMPLETED SUCCESSFULLY"
