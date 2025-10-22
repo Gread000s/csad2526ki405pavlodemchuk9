@@ -1,26 +1,37 @@
 @echo off
 setlocal
 
-echo "--- 1. DELETING OLD BUILD CACHE (rmdir /s /q build) ---"
+echo "--- 1. DELETING OLD BUILD CACHE ---"
 if exist "build" (
     rmdir /s /q build
 )
 
 echo "--- 2. CREATING CLEAN BUILD DIRECTORY ---"
 mkdir build
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
 cd build
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-echo "--- 3. CONFIGURING CMAKE (Defaulting to Debug) ---"
-REM Забираємо -DCMAKE_BUILD_TYPE=Release, CMake за замовчуванням використає Debug
+echo "--- 3. CONFIGURING CMAKE ---"
 cmake ..
+if %errorlevel% neq 0 (
+    echo "!!!! CMAKE CONFIGURE FAILED !!!!"
+    exit /b %errorlevel%
+)
 
 echo "--- 4. BUILDING PROJECT (Debug) ---"
-REM Явно збираємо конфігурацію Debug
 cmake --build . --config Debug
+if %errorlevel% neq 0 (
+    echo "!!!! CMAKE BUILD FAILED !!!!"
+    exit /b %errorlevel%
+)
 
-echo "--- 5. RUNNING TESTS DIRECTLY (./Debug/run_tests.exe) ---"
-REM Запускаємо Debug версію тесту напряму
-.\Debug\run_tests.exe
+echo "--- 5. RUNNING TESTS WITH CTEST (Debug) ---"
+ctest -C Debug --verbose
+if %errorlevel% neq 0 (
+    echo "!!!! CTEST FAILED !!!!"
+    exit /b %errorlevel%
+)
 
 popd
-pause
+echo "CI SCRIPT COMPLETED SUCCESSFULLY"

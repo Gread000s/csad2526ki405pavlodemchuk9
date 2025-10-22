@@ -18,12 +18,3 @@ TEST(BasicAddition, NegativeNumbers) {
     EXPECT_EQ(add(5, -5), 0);
 }
 
-// ----------------------------------------------------
-// ПОВЕРТАЄМО: Власна функція main() для запуску тестів
-// ----------------------------------------------------
-int main(int argc, char **argv) {
-    // Ініціалізуємо GoogleTest
-    ::testing::InitGoogleTest(&argc, argv);
-    // Запускаємо ВСІ тести, які він знайде
-    return RUN_ALL_TESTS();
-}
