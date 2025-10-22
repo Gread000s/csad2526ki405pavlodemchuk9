@@ -1,0 +1,45 @@
+name: C++ CI
+
+on:
+  push:
+    branches:
+      - "*develop*"
+      - "*master*"
+  pull_request:
+    branches:
+      - "*develop*"
+      - "*master*"
+
+jobs:
+  cross-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Grant execute permissions to ci.sh (if not on Windows)
+      - name: Grant execute permissions to ci.sh
+        if: runner.os != 'Windows'
+        run: chmod +x ./ci.sh
+
+      # Step 3: Run ci.sh script (if not on Windows)
+      - name: Run ci.sh script
+        if: runner.os != 'Windows'
+        run: ./ci.sh
+
+      # Step 4: Run ci.bat script (if on Windows)
+      - name: Run ci.bat script
+        if: runner.os == 'Windows'
+        run: .\ci.bat
+
+      # Step 5: Upload the 'build' directory as an artifact
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: build
