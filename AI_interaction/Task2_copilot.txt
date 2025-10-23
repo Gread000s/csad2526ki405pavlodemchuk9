@@ -1,0 +1,19 @@
+Log of requests to GitHub Copilot for Lab Work №1
+
+Step 2: Generating CMakeLists.txt
+
+User: Generate a simple CMakeLists.txt for a C++ project. The project name should be "HelloWorld". It needs to create an executable from the main.cpp file and use the C++
+
+Copilot: "
+cmake_minimum_required(VERSION 3.10)
+
+# Set the project name and language
+project(HelloWorld LANGUAGES CXX)
+
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Add the executable
+add_executable(HelloWorld main.cpp)
+"
