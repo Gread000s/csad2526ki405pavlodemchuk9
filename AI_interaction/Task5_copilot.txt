@@ -1,0 +1,123 @@
+Log of requests to GitHub Copilot for Lab Work №1
+
+Step 5: Generating a YML file for GitHub Actions
+
+
+===================
+Step 3.1 Generate folder .github/workflows and Create ci.yml
+===================
+User:  GitHub Actions workflow named 'C++ CI'
+
+ Trigger this workflow on push or pull_request
+ for any branch containing 'develop' or 'master' in its name.
+
+ Create one job named 'cross-build'.
+ This job should run on a strategy matrix for 'os' with:
+ - ubuntu-latest
+ - windows-latest
+ - macos-latest
+
+ The steps for this job are:
+ 1. Checkout the code using actions/checkout@v4.
+ 2. Grant execute permissions to ci.sh if not on Windows.
+ 3. Run the ci.sh script if not on Windows.
+ 4. Run the ci.bat script if on Windows.
+ 5. Upload the 'build' directory as an artifact
+    named 'build-artifacts'.
+Copilot: "
+name: C++ CI
+
+on:
+  push:
+    branches:
+      - "*develop*"
+      - "*master*"
+  pull_request:
+    branches:
+      - "*develop*"
+      - "*master*"
+
+jobs:
+  cross-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Grant execute permissions to ci.sh (if not on Windows)
+      - name: Grant execute permissions to ci.sh
+        if: runner.os != 'Windows'
+        run: chmod +x ./ci.sh
+
+      # Step 3: Run ci.sh script (if not on Windows)
+      - name: Run ci.sh script
+        if: runner.os != 'Windows'
+        run: ./ci.sh
+
+      # Step 4: Run ci.bat script (if on Windows)
+      - name: Run ci.bat script
+        if: runner.os == 'Windows'
+        run: .\ci.bat
+
+      # Step 5: Upload the 'build' directory as an artifact
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: build
+"
+
+
+===================
+Step 3.2 Repair Ctest for project
+===================
+User: Rewrite Cmake to eliminate the MSB3073 issue and add correct ctests execution.
+
+Copilot: "
+cmake_minimum_required(VERSION 3.16)
+project(HelloWorld LANGUAGES CXX)
+
+# --- УВІМКНУТИ CTEST ---
+# Додай цей рядок:
+include(CTest)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# --- Головна програма ---
+add_executable(HelloWorld main.cpp math_operations.cpp)
+
+# --- GoogleTest ---
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/heads/main.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# --- РІШЕННЯ ДЛЯ MSB3073: ---
+# Кажемо GoogleTest НЕ додавати "post-build event" для запуску тестів
+set(GTEST_ADD_TESTS_POST_BUILD OFF) 
+
+FetchContent_MakeAvailable(googletest) # Це створює цілі gtest та gtest_main
+
+# --- Тестова програма ---
+add_executable(unit_tests
+    tests/unit_tests.cpp
+    math_operations.cpp
+)
+
+# --- РІШЕННЯ ДЛЯ ***Not Run: ---
+set_property(TARGET unit_tests PROPERTY EXCLUDE_FROM_ALL FALSE)
+
+# --- Лінкування ---
+target_link_libraries(unit_tests PRIVATE gtest gtest_main)
+
+# --- Додаємо наш виконуваний файл як тест для CTest ---
+add_test(NAME BasicAdditionTest COMMAND unit_tests)
+"

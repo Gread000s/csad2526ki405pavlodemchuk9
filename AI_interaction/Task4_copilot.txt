@@ -1,0 +1,149 @@
+Log of requests to GitHub Copilot for Lab Work №1
+
+Step 4: Generating a CI script for local building
+
+
+===================
+Step 3.1 Generate ci.sh
+===================
+User: Write a bash script that creates a ‘build’ directory, navigates to it, 
+runs ‘cmake ..’, builds the project with ‘cmake --build .’, and runs the ‘ctest’ tests.
+Copilot: "
+#!/bin/bash
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Create the 'build' directory if it doesn't exist
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+
+# Navigate to the 'build' directory
+cd build
+
+# Run CMake to configure the project
+cmake ..
+
+# Build the project
+cmake --build .
+
+# Run tests
+ctest
+"
+
+
+===================
+Step 3.2 Generate ci.bat
+===================
+User: Write a Windows batch script (.bat) that creates the ‘build’ directory
+if it does not exist, navigates to it, runs ‘cmake ..’, builds the project 
+using ‘cmake --build .’ and runs the ‘ctest’ tests.
+
+Copilot: "
+@echo off
+setlocal
+
+echo "--- 1. DELETING OLD BUILD CACHE (rmdir /s /q build) ---"
+if exist "build" (
+    rmdir /s /q build
+)
+
+echo "--- 2. CREATING CLEAN BUILD DIRECTORY ---"
+mkdir build
+cd build
+
+echo "--- 3. CONFIGURING CMAKE (Defaulting to Debug) ---"
+REM Забираємо -DCMAKE_BUILD_TYPE=Release, CMake за замовчуванням використає Debug
+cmake ..
+
+echo "--- 4. BUILDING PROJECT (Debug) ---"
+REM Явно збираємо конфігурацію Debug
+cmake --build . --config Debug
+
+echo "--- 5. RUNNING TESTS DIRECTLY (./Debug/run_tests.exe) ---"
+REM Запускаємо Debug версію тесту напряму
+.\Debug\run_tests.exe
+
+popd
+pause
+"
+===================
+Step 3.3 Solv problem revork unit_tests.cpp
+|||||||||||||||||||||
+What error occurred? When you try to compile run_tests.exe from your file, 
+the compiler says: “I successfully converted your task list into machine code, 
+but I don't know where to start. I can't find the main function.”
+
+At the linking stage, this results in an error: undefined reference to main.
+|||||||||||||||||||||
+===================
+User: Add a couple of tests to unit_tests.cpp and solve the problem with undefined 
+reference to main by adding the main function to this file.
+
+Copilot: "
+#include <gtest/gtest.h>
+#include "../math_operations.h" 
+
+TEST(BasicAddition, PositiveNumbers) {
+    EXPECT_EQ(add(5, 5), 10);
+}
+
+TEST(BasicAddition, AddingZero) {
+    EXPECT_EQ(add(7, 0), 7);
+    EXPECT_EQ(add(0, 3), 3);
+    EXPECT_EQ(add(0, 0), 0);
+}
+
+TEST(BasicAddition, NegativeNumbers) {
+    EXPECT_EQ(add(-5, -5), -10);
+    EXPECT_EQ(add(-5, 5), 0);
+    EXPECT_EQ(add(5, -5), 0);
+}
+
+// ----------------------------------------------------
+// ПОВЕРТАЄМО: Власна функція main() для запуску тестів
+// ----------------------------------------------------
+int main(int argc, char **argv) {
+    // Ініціалізуємо GoogleTest
+    ::testing::InitGoogleTest(&argc, argv);
+    // Запускаємо ВСІ тести, які він знайде
+    return RUN_ALL_TESTS();
+}
+"
+
+===================
+Step 3.4 Change CMakeLists.txt
+===================
+User: Update my CMakeLists.txt to add Google Test. Create an executable run_tests. 
+Use gtest_discover_tests to automatically find all tests inside it
+Copilot: "
+cmake_minimum_required(VERSION 3.16)
+project(HelloWorld LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# --- Головна програма ---
+add_executable(HelloWorld main.cpp math_operations.cpp)
+
+# --- GoogleTest ---
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/heads/main.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# set(GTEST_DISCOVER_TESTS_POST_BUILD OFF) - НЕ ПОТРІБНО
+FetchContent_MakeAvailable(googletest) # Це створює цілі gtest та gtest_main
+
+# --- Тестова програма ---
+add_executable(run_tests
+    tests/unit_tests.cpp # Цей файл тепер містить main()
+    math_operations.cpp
+)
+
+# Лінкуємо ТІЛЬКИ бібліотеку gtest (БЕЗ gtest_main),
+
+target_link_libraries(run_tests PRIVATE gtest)
+"
