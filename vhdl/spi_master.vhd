@@ -127,15 +127,14 @@ begin
                     -- --- СТАН: SCK_LOW (SCK = '0') ---
                     WHEN SCK_LOW =>
                         o_sck   <= '0';
-                        -- Зчитуємо біт з MISO і записуємо його в s_rx_reg
-                        s_rx_reg(7) <= i_miso;
+                        -- Зчитування біта буде в наступному стані CHECK_COUNT
                         s_state     <= CHECK_COUNT; -- Перехід
 
                     -- --- СТАН: CHECK_COUNT (Перевірка лічильника) ---
                     WHEN CHECK_COUNT =>
                         -- Зсуваємо обидва регістри на 1 біт
                         s_tx_reg <= s_tx_reg(6 DOWNTO 0) & '0';
-                        s_rx_reg <= s_rx_reg(6 DOWNTO 0) & '0';
+                        s_rx_reg <= s_rx_reg(6 DOWNTO 0) & i_miso;
                         
                         IF s_bit_counter = 7 THEN
                             -- Вже відправили 8 біт (від 0 до 7)
